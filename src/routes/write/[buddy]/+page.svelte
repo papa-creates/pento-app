@@ -2,7 +2,7 @@
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
   import { getSensei, getRandomPrompt, type Sensei, type Prompt } from '$lib/data/senseis';
-  import { stats, countWords, type WritingSession } from '$lib/stores/session';
+  import { stats, sessions, draft, countWords, type WritingSession } from '$lib/stores/session';
   import { subscription, canWrite } from '$lib/stores/subscription';
   import { onMount, onDestroy } from 'svelte';
 
@@ -22,9 +22,34 @@
   let secondsRemaining = $state(SESSION_SECONDS);
   let secondsElapsed = $state(0);
   let timerInterval: ReturnType<typeof setInterval> | undefined;
+  let autoSaveTimeout: ReturnType<typeof setTimeout> | undefined;
+  let lastSaved = $state<Date | null>(null);
 
   // Subscribe to canWrite changes
   canWrite.subscribe(c => userCanWrite = c);
+
+  // Auto-save draft (debounced)
+  function autoSave() {
+    if (autoSaveTimeout) clearTimeout(autoSaveTimeout);
+    autoSaveTimeout = setTimeout(() => {
+      if (sensei && currentPrompt && content.trim()) {
+        draft.save({
+          senseiId: sensei.id,
+          promptText: currentPrompt.text,
+          content,
+          lastSaved: new Date()
+        });
+        lastSaved = new Date();
+      }
+    }, 1000); // Save 1 second after typing stops
+  }
+
+  // Watch content changes for auto-save
+  $effect(() => {
+    if (phase === 'writing' && content) {
+      autoSave();
+    }
+  });
 
   onMount(() => {
     // Check subscription access
@@ -46,6 +71,7 @@
 
   onDestroy(() => {
     if (timerInterval) clearInterval(timerInterval);
+    if (autoSaveTimeout) clearTimeout(autoSaveTimeout);
   });
 
   function shufflePrompt() {
@@ -84,11 +110,17 @@
       duration: secondsElapsed
     };
 
+    // Save session with full content
+    sessions.add(session);
+
     // Record session for stats
     stats.recordSession(session);
 
     // Record session for subscription tracking (counts against free limit)
     subscription.recordSession();
+
+    // Clear the draft since session is complete
+    draft.clear();
 
     phase = 'complete';
   }
