@@ -15,8 +15,20 @@
   --duration: 0.3s;
 }
 
-/* Dark theme (default) */
-:root, [data-theme="dark"] {
+/* Light theme (default) - washi paper aesthetic */
+:root, [data-theme="light"] {
+  --bg: #faf9f6;
+  --bg-subtle: #f3f1ec;
+  --bg-elevated: #ffffff;
+  --text: #2c2c2a;
+  --text-secondary: #5c5c58;
+  --text-muted: #9c9c96;
+  --accent: #7a6a5a;
+  --border: #e6e4de;
+}
+
+/* Dark theme */
+[data-theme="dark"] {
   --bg: #0d0d0c;
   --bg-subtle: #161614;
   --bg-elevated: #1a1a18;
@@ -25,18 +37,6 @@
   --text-muted: #4a4a45;
   --accent: #c4a35a;
   --border: #2a2a28;
-}
-
-/* Light theme - warm paper */
-[data-theme="light"] {
-  --bg: #f8f6f1;
-  --bg-subtle: #efede6;
-  --bg-elevated: #ffffff;
-  --text: #1a1a18;
-  --text-secondary: #6b6b65;
-  --text-muted: #a8a8a0;
-  --accent: #8b7355;
-  --border: #e0ded6;
 }
 
 * {

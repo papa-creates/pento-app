@@ -5,7 +5,7 @@ type Theme = 'dark' | 'light';
 
 function createThemeStore() {
   const stored = browser ? localStorage.getItem('pento_theme') as Theme : null;
-  const initial: Theme = stored || 'dark';
+  const initial: Theme = stored || 'light';
 
   const { subscribe, set } = writable<Theme>(initial);
 

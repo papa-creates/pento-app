@@ -7,7 +7,7 @@
 
   onMount(() => {
     if (browser) {
-      const stored = localStorage.getItem('pento_theme') || 'dark';
+      const stored = localStorage.getItem('pento_theme') || 'light';
       document.documentElement.setAttribute('data-theme', stored);
     }
   });
