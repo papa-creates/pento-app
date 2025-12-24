@@ -86,8 +86,12 @@
   </main>
 
   <footer class="footer">
+    {#if userStats.totalSessions > 0}
+      <a href="/history" class="footer-link">history</a>
+      <span class="dot"></span>
+    {/if}
     {#if currentSub.status !== 'pro'}
-      <a href="/pricing" class="pricing-link">pricing</a>
+      <a href="/pricing" class="footer-link">pricing</a>
       <span class="dot"></span>
     {/if}
     <span>20 minutes. every day.</span>
@@ -296,12 +300,12 @@
     gap: var(--space-sm);
   }
 
-  .pricing-link {
+  .footer-link {
     color: var(--text-muted);
     text-decoration: none;
   }
 
-  .pricing-link:hover {
+  .footer-link:hover {
     color: var(--text-secondary);
   }
 
