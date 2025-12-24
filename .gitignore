@@ -1,0 +1,23 @@
+# Dependencies
+node_modules
+
+# Build
+.svelte-kit
+build
+.vercel
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
