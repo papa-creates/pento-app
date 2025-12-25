@@ -3,6 +3,7 @@
   import { stats } from '$lib/stores/session';
   import { theme } from '$lib/stores/theme';
   import { subscription, canWrite, sessionsRemaining, FREE_LIMIT } from '$lib/stores/subscription';
+  import { browser } from '$app/environment';
 
   let showSenseis = $state(false);
   let userStats = $state($stats);
@@ -10,6 +11,44 @@
   let currentSub = $state($subscription);
   let userCanWrite = $state($canWrite);
   let remaining = $state($sessionsRemaining);
+
+  // Email capture state
+  let email = $state('');
+  let emailSubmitted = $state(false);
+  let emailError = $state('');
+
+  // Check if already subscribed
+  $effect(() => {
+    if (browser) {
+      const subscribed = localStorage.getItem('pento_email_subscribed');
+      if (subscribed) emailSubmitted = true;
+    }
+  });
+
+  function handleEmailSubmit(e: Event) {
+    e.preventDefault();
+    emailError = '';
+
+    if (!email.trim()) {
+      emailError = 'please enter your email';
+      return;
+    }
+
+    if (!email.includes('@') || !email.includes('.')) {
+      emailError = 'please enter a valid email';
+      return;
+    }
+
+    // Store email in localStorage (can be exported later)
+    const emails = JSON.parse(localStorage.getItem('pento_waitlist') || '[]');
+    if (!emails.includes(email.trim())) {
+      emails.push(email.trim());
+      localStorage.setItem('pento_waitlist', JSON.stringify(emails));
+    }
+
+    localStorage.setItem('pento_email_subscribed', 'true');
+    emailSubmitted = true;
+  }
 
   stats.subscribe(s => userStats = s);
   theme.subscribe(t => currentTheme = t);
@@ -55,6 +94,27 @@
         <a href="/pricing" class="upgrade-prompt">
           Free sessions used. Upgrade to continue.
         </a>
+      {/if}
+
+      <!-- Email Capture for New Visitors -->
+      {#if userStats.totalSessions === 0 && !emailSubmitted}
+        <form class="email-capture" onsubmit={handleEmailSubmit}>
+          <p class="email-label">get writing tips & updates</p>
+          <div class="email-form">
+            <input
+              type="email"
+              bind:value={email}
+              placeholder="your@email.com"
+              class="email-input"
+            />
+            <button type="submit" class="email-btn">join</button>
+          </div>
+          {#if emailError}
+            <p class="email-error">{emailError}</p>
+          {/if}
+        </form>
+      {:else if emailSubmitted && userStats.totalSessions === 0}
+        <p class="email-thanks">you're on the list</p>
       {/if}
     {:else}
       <!-- Sensei Selection -->
@@ -189,6 +249,75 @@
 
   .upgrade-prompt:hover {
     text-decoration: underline;
+  }
+
+  /* Email Capture */
+  .email-capture {
+    margin-top: var(--space-xl);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+
+  .email-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+  }
+
+  .email-form {
+    display: flex;
+    gap: var(--space-xs);
+  }
+
+  .email-input {
+    padding: var(--space-sm) var(--space-md);
+    font-size: 0.85rem;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    background: transparent;
+    color: var(--text);
+    width: 200px;
+    font-family: var(--font-sans);
+  }
+
+  .email-input:focus {
+    outline: none;
+    border-color: var(--text-muted);
+  }
+
+  .email-input::placeholder {
+    color: var(--text-muted);
+  }
+
+  .email-btn {
+    padding: var(--space-sm) var(--space-md);
+    font-size: 0.85rem;
+    border: 1px solid var(--text-muted);
+    border-radius: 2px;
+    background: transparent;
+    color: var(--text);
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all var(--duration) var(--ease);
+  }
+
+  .email-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .email-error {
+    font-size: 0.75rem;
+    color: var(--accent);
+  }
+
+  .email-thanks {
+    margin-top: var(--space-xl);
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
   }
 
   /* Back Button */
