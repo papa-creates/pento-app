@@ -154,6 +154,10 @@
       <a href="/pricing" class="footer-link">pricing</a>
       <span class="dot"></span>
     {/if}
+    <a href="/privacy" class="footer-link">privacy</a>
+    <span class="dot"></span>
+    <a href="/terms" class="footer-link">terms</a>
+    <span class="dot"></span>
     <span>20 minutes. every day.</span>
   </footer>
 </div>
