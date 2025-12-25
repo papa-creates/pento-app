@@ -129,6 +129,13 @@
     goto('/');
   }
 
+  function shareToTwitter() {
+    const text = `Just wrote ${wordCount} words in ${formatTime(secondsElapsed)} with Pento.\n\n20 minutes of writing, every day.`;
+    const url = 'https://pento-app.vercel.app';
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+    window.open(twitterUrl, '_blank', 'width=550,height=420');
+  }
+
   function formatTime(seconds: number): string {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -220,9 +227,14 @@
 
           <p class="complete-message">well done.</p>
 
-          <button class="btn-primary" onclick={goHome}>
-            return
-          </button>
+          <div class="complete-actions">
+            <button class="btn-primary" onclick={goHome}>
+              return
+            </button>
+            <button class="btn-share" onclick={shareToTwitter}>
+              share on X
+            </button>
+          </div>
         </main>
       </div>
     {/if}
@@ -447,6 +459,24 @@
     font-size: 1rem;
     color: var(--text-secondary);
     font-style: italic;
+  }
+
+  .complete-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+
+  .btn-share {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+  }
+
+  .btn-share:hover {
+    color: var(--accent);
+    opacity: 1;
   }
 
   @media (max-width: 600px) {
