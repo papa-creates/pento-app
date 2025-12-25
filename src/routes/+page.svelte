@@ -3,6 +3,7 @@
   import { stats } from '$lib/stores/session';
   import { theme } from '$lib/stores/theme';
   import { subscription, canWrite, sessionsRemaining, FREE_LIMIT } from '$lib/stores/subscription';
+  import { showInstallButton, installApp, isInstalled } from '$lib/stores/pwa';
   import { browser } from '$app/environment';
 
   let showSenseis = $state(false);
@@ -11,6 +12,8 @@
   let currentSub = $state($subscription);
   let userCanWrite = $state($canWrite);
   let remaining = $state($sessionsRemaining);
+  let canInstallPwa = $state($showInstallButton);
+  let appInstalled = $state($isInstalled);
 
   // Email capture state
   let email = $state('');
@@ -55,17 +58,34 @@
   subscription.subscribe(s => currentSub = s);
   canWrite.subscribe(c => userCanWrite = c);
   sessionsRemaining.subscribe(r => remaining = r);
+  showInstallButton.subscribe(c => canInstallPwa = c);
+  isInstalled.subscribe(i => appInstalled = i);
+
+  async function handleInstall() {
+    await installApp();
+  }
 </script>
 
 <div class="home">
-  <!-- Theme Toggle -->
-  <button class="theme-toggle" onclick={() => theme.toggle()} aria-label="Toggle theme">
-    {#if currentTheme === 'dark'}
-      <span class="icon">○</span>
-    {:else}
-      <span class="icon">●</span>
+  <!-- Top Controls -->
+  <div class="top-controls">
+    {#if canInstallPwa}
+      <button class="install-btn" onclick={handleInstall} aria-label="Install app">
+        <span class="install-icon">+</span>
+        <span class="install-text">install</span>
+      </button>
+    {:else if appInstalled}
+      <span class="installed-badge">installed</span>
     {/if}
-  </button>
+
+    <button class="theme-toggle" onclick={() => theme.toggle()} aria-label="Toggle theme">
+      {#if currentTheme === 'dark'}
+        <span class="icon">○</span>
+      {:else}
+        <span class="icon">●</span>
+      {/if}
+    </button>
+  </div>
 
   <main class="center">
     {#if !showSenseis}
@@ -442,11 +462,17 @@
     color: var(--text-secondary);
   }
 
-  /* Theme Toggle */
-  .theme-toggle {
+  /* Top Controls */
+  .top-controls {
     position: absolute;
     top: var(--space-lg);
     right: var(--space-lg);
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+  }
+
+  .theme-toggle {
     padding: var(--space-sm);
     font-size: 1rem;
     color: var(--text-muted);
@@ -455,6 +481,38 @@
   .theme-toggle:hover {
     color: var(--text-secondary);
     opacity: 1;
+  }
+
+  /* Install Button */
+  .install-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-xs) var(--space-sm);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: transparent;
+    letter-spacing: 0.1em;
+    transition: all var(--duration) var(--ease);
+  }
+
+  .install-btn:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .install-icon {
+    font-size: 0.9rem;
+    font-weight: 300;
+  }
+
+  .installed-badge {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    opacity: 0.7;
   }
 
   @media (max-width: 600px) {
