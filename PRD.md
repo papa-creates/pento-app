@@ -44,9 +44,9 @@ marathon        "Marathon"           Session over 1000 words
 ```
 
 **Acceptance**:
-- [ ] At least 12 achievements defined
-- [ ] Each has id, name, description, icon (emoji)
-- [ ] Exportable as array
+- [x] At least 12 achievements defined
+- [x] Each has id, name, description, icon (emoji)
+- [x] Exportable as array
 
 ---
 
