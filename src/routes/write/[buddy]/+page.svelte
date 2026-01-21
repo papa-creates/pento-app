@@ -2,7 +2,8 @@
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
   import { getSensei, getRandomPrompt, type Sensei, type Prompt } from '$lib/data/senseis';
-  import { stats, sessions, draft, countWords, type WritingSession } from '$lib/stores/session';
+  import { stats, sessions, draft, countWords, checkAchievements, type WritingSession } from '$lib/stores/session';
+  import { get } from 'svelte/store';
   import { subscription, canWrite } from '$lib/stores/subscription';
   import { onMount, onDestroy } from 'svelte';
 
@@ -115,6 +116,11 @@
 
     // Record session for stats
     stats.recordSession(session);
+
+    // Check for achievement unlocks
+    const currentStats = get(stats);
+    const allSessions = get(sessions);
+    checkAchievements(session, currentStats, allSessions);
 
     // Record session for subscription tracking (counts against free limit)
     subscription.recordSession();

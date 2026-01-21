@@ -1,5 +1,13 @@
 import { writable, get } from 'svelte/store';
 import { browser } from '$app/environment';
+import { achievements } from './achievements';
+
+// Track newly unlocked achievements for toast notifications
+export const newlyUnlocked = writable<string[]>([]);
+
+export function clearNewlyUnlocked() {
+  newlyUnlocked.set([]);
+}
 
 export interface WritingSession {
   id: string;
@@ -145,4 +153,62 @@ export const draft = createDraftStore();
 
 export function countWords(text: string): number {
   return text.trim().split(/\s+/).filter(Boolean).length;
+}
+
+// Achievement checking - call after recording a session
+export function checkAchievements(session: WritingSession, userStats: UserStats, allSessions: WritingSession[]) {
+  const unlocked: string[] = [];
+
+  function tryUnlock(id: string) {
+    if (achievements.unlock(id)) {
+      unlocked.push(id);
+    }
+  }
+
+  // First session
+  if (userStats.totalSessions === 1) {
+    tryUnlock('first-blood');
+  }
+
+  // Word count milestones
+  if (userStats.totalWords >= 1000) tryUnlock('word-warrior-1k');
+  if (userStats.totalWords >= 10000) tryUnlock('word-warrior-10k');
+  if (userStats.totalWords >= 50000) tryUnlock('word-warrior-50k');
+
+  // Single session marathon
+  if (session.wordCount >= 1000) {
+    tryUnlock('marathon');
+  }
+
+  // Streak achievements
+  if (userStats.currentStreak >= 7) tryUnlock('the-habit');
+  if (userStats.currentStreak >= 30) tryUnlock('the-professional');
+
+  // Sensei-specific counts
+  const senseiCounts = allSessions.reduce((acc, s) => {
+    acc[s.senseiId] = (acc[s.senseiId] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  if (senseiCounts['kaze'] >= 10) tryUnlock('precision');
+  if (senseiCounts['sora'] >= 10) tryUnlock('flow-state');
+  if (senseiCounts['ryu'] >= 10) tryUnlock('fearless');
+
+  // Genre hopper - used all 3 senseis
+  const uniqueSenseis = new Set(allSessions.map(s => s.senseiId));
+  if (uniqueSenseis.size >= 3) {
+    tryUnlock('genre-hopper');
+  }
+
+  // Time-based achievements
+  const hour = new Date().getHours();
+  if (hour >= 22 || hour < 4) tryUnlock('night-owl');
+  if (hour >= 4 && hour < 7) tryUnlock('early-bird');
+
+  // Update newlyUnlocked store for toast display
+  if (unlocked.length > 0) {
+    newlyUnlocked.update(current => [...current, ...unlocked]);
+  }
+
+  return unlocked;
 }

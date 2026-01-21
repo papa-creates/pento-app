@@ -61,9 +61,9 @@ After `stats.recordSession()`, check and unlock achievements:
 - Check first session
 
 **Acceptance**:
-- [ ] Completing first session unlocks "First Blood"
-- [ ] Reaching 7-day streak unlocks "The Habit"
-- [ ] Writing 1000+ words in session unlocks "Marathon"
+- [x] Completing first session unlocks "First Blood"
+- [x] Reaching 7-day streak unlocks "The Habit"
+- [x] Writing 1000+ words in session unlocks "Marathon"
 
 ---
 
