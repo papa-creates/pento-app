@@ -148,9 +148,9 @@ Add mode selection to prompt phase:
 - Store selected mode in session
 
 **Acceptance**:
-- [ ] Can select mode before starting
-- [ ] Mode selection visible but not intrusive
-- [ ] Selected mode persists through session
+- [x] Can select mode before starting
+- [x] Mode selection visible but not intrusive
+- [x] Selected mode persists through session
 
 ---
 
@@ -164,9 +164,9 @@ When mode is 'flood':
 - Celebrate chaos at completion
 
 **Acceptance**:
-- [ ] Backspace does nothing in flood mode
-- [ ] Delete key also disabled
-- [ ] Clear indicator shown during writing
+- [x] Backspace does nothing in flood mode
+- [x] Delete key also disabled
+- [x] Clear indicator shown during writing
 
 ---
 
@@ -180,9 +180,9 @@ When mode is 'deep':
 - Minimum 10 minutes before can finish
 
 **Acceptance**:
-- [ ] No countdown pressure
-- [ ] Elapsed time shown subtly
-- [ ] Can't finish before 10 min
+- [x] No countdown pressure
+- [x] Elapsed time shown subtly
+- [x] Can't finish before 10 min
 
 ---
 
@@ -200,9 +200,9 @@ Add chaos prompt generator:
 - Urgent styling (pulsing border?)
 
 **Acceptance**:
-- [ ] Gonzo generates unique combo prompts
-- [ ] Only available with Ryu
-- [ ] Feels urgent/intense
+- [x] Gonzo generates unique combo prompts
+- [x] Only available with Ryu
+- [x] Feels urgent/intense
 
 ---
 
