@@ -81,9 +81,9 @@ Create toast component:
 - `show(achievement)` method
 
 **Acceptance**:
-- [ ] Toast appears when achievement unlocks
-- [ ] Multiple achievements queue properly
-- [ ] Dismisses automatically
+- [x] Toast appears when achievement unlocks
+- [x] Multiple achievements queue properly
+- [x] Dismisses automatically
 
 ---
 

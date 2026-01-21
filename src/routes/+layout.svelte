@@ -3,6 +3,7 @@
   import { onMount } from 'svelte';
   import { browser } from '$app/environment';
   import { pwaInstallPrompt, canInstall, isInstalled } from '$lib/stores/pwa';
+  import AchievementToast from '$lib/components/AchievementToast.svelte';
 
   let { children } = $props();
 
@@ -49,6 +50,8 @@
 <div class="app">
   {@render children()}
 </div>
+
+<AchievementToast />
 
 <style>
   .app {
