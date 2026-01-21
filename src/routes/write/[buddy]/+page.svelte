@@ -1,7 +1,7 @@
 <script lang="ts">
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
-  import { getSensei, getRandomPrompt, type Sensei, type Prompt } from '$lib/data/senseis';
+  import { getSensei, getRandomPrompt, getCompletionMessage, type Sensei, type Prompt } from '$lib/data/senseis';
   import { stats, sessions, draft, countWords, checkAchievements, type WritingSession } from '$lib/stores/session';
   import { get } from 'svelte/store';
   import { subscription, canWrite } from '$lib/stores/subscription';
@@ -18,6 +18,9 @@
   let availableModes = $state<WritingMode[]>([]);
   let selectedMode = $state<WritingMode | undefined>(undefined);
   let chaosPrompt = $state<string>('');
+
+  // Completion message (set when finishing)
+  let completionMessage = $state<string>('');
 
   // States: 'prompt' | 'writing' | 'complete'
   let phase = $state<'prompt' | 'writing' | 'complete'>('prompt');
@@ -168,6 +171,9 @@
 
     // Clear the draft since session is complete
     draft.clear();
+
+    // Get sensei-specific completion message
+    completionMessage = getCompletionMessage(sensei);
 
     phase = 'complete';
   }
@@ -339,7 +345,10 @@
             </div>
           </div>
 
-          <p class="complete-message">well done.</p>
+          <p class="complete-message">
+            <span class="sensei-quote">"{completionMessage}"</span>
+            <span class="sensei-attr">— {sensei.name}</span>
+          </p>
 
           <div class="complete-actions">
             <button class="btn-primary" onclick={goHome}>
@@ -653,9 +662,25 @@
   }
 
   .complete-message {
-    font-size: 1rem;
-    color: var(--text-secondary);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xs);
+    text-align: center;
+    max-width: 400px;
+  }
+
+  .sensei-quote {
+    font-size: 1.1rem;
+    color: var(--text);
     font-style: italic;
+    line-height: 1.5;
+  }
+
+  .sensei-attr {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
   }
 
   .complete-actions {

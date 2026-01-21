@@ -1,10 +1,11 @@
 <script lang="ts">
-  import { senseis } from '$lib/data/senseis';
-  import { stats } from '$lib/stores/session';
+  import { senseis, getSensei, getStreakMessage } from '$lib/data/senseis';
+  import { stats, sessions } from '$lib/stores/session';
   import { theme } from '$lib/stores/theme';
   import { subscription, canWrite, sessionsRemaining, FREE_LIMIT } from '$lib/stores/subscription';
   import { showInstallButton, installApp, isInstalled } from '$lib/stores/pwa';
   import { browser } from '$app/environment';
+  import { get } from 'svelte/store';
 
   let showSenseis = $state(false);
   let userStats = $state($stats);
@@ -15,10 +16,13 @@
   let canInstallPwa = $state($showInstallButton);
   let appInstalled = $state($isInstalled);
 
+  // Streak milestone state
+  let streakMilestone = $state<{ message: string; senseiName: string; level: number } | null>(null);
+
   // Email capture state
   let email = $state('');
   let emailSubmitted = $state(false);
-  let emailError = $state('');
+  let emailError = '';
 
   // Check if already subscribed
   $effect(() => {
@@ -27,6 +31,47 @@
       if (subscribed) emailSubmitted = true;
     }
   });
+
+  // Check for streak milestones (3, 7, 30 days)
+  $effect(() => {
+    if (!browser || userStats.currentStreak === 0) return;
+
+    const streak = userStats.currentStreak;
+    const lastShown = parseInt(localStorage.getItem('pento_streak_milestone_shown') || '0');
+
+    // Determine current milestone level
+    let milestoneLevel = 0;
+    if (streak >= 30) milestoneLevel = 30;
+    else if (streak >= 7) milestoneLevel = 7;
+    else if (streak >= 3) milestoneLevel = 3;
+
+    // Only show if we reached a new milestone
+    if (milestoneLevel > 0 && milestoneLevel > lastShown) {
+      // Find the user's most-used sensei
+      const allSessions = get(sessions);
+      const senseiCounts: Record<string, number> = {};
+      allSessions.forEach(s => {
+        senseiCounts[s.senseiId] = (senseiCounts[s.senseiId] || 0) + 1;
+      });
+
+      const favoriteSenseiId = Object.entries(senseiCounts)
+        .sort((a, b) => b[1] - a[1])[0]?.[0] || 'kaze';
+
+      const sensei = getSensei(favoriteSenseiId);
+      if (sensei) {
+        streakMilestone = {
+          message: getStreakMessage(sensei),
+          senseiName: sensei.name,
+          level: milestoneLevel
+        };
+        localStorage.setItem('pento_streak_milestone_shown', String(milestoneLevel));
+      }
+    }
+  });
+
+  function dismissMilestone() {
+    streakMilestone = null;
+  }
 
   function handleEmailSubmit(e: Event) {
     e.preventDefault();
@@ -67,6 +112,26 @@
 </script>
 
 <div class="home">
+  <!-- Streak Milestone Celebration -->
+  {#if streakMilestone}
+    <div class="milestone-overlay" onclick={dismissMilestone}>
+      <div class="milestone-card" onclick={(e) => e.stopPropagation()}>
+        <span class="milestone-badge">
+          {#if streakMilestone.level === 30}
+            🔥 30 days
+          {:else if streakMilestone.level === 7}
+            ⭐ 7 days
+          {:else}
+            ✨ 3 days
+          {/if}
+        </span>
+        <p class="milestone-message">"{streakMilestone.message}"</p>
+        <p class="milestone-attr">— {streakMilestone.senseiName}</p>
+        <button class="milestone-dismiss" onclick={dismissMilestone}>continue</button>
+      </div>
+    </div>
+  {/if}
+
   <!-- Top Controls -->
   <div class="top-controls">
     {#if canInstallPwa}
@@ -515,6 +580,65 @@
     color: var(--text-muted);
     letter-spacing: 0.1em;
     opacity: 0.7;
+  }
+
+  /* === STREAK MILESTONE === */
+  .milestone-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: var(--space-lg);
+  }
+
+  .milestone-card {
+    background: var(--bg);
+    padding: var(--space-xl);
+    border-radius: 8px;
+    text-align: center;
+    max-width: 360px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-md);
+  }
+
+  .milestone-badge {
+    font-size: 1rem;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  .milestone-message {
+    font-size: 1.1rem;
+    font-style: italic;
+    color: var(--text);
+    line-height: 1.5;
+  }
+
+  .milestone-attr {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+  }
+
+  .milestone-dismiss {
+    margin-top: var(--space-sm);
+    padding: var(--space-sm) var(--space-lg);
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+    border: 1px solid var(--text-muted);
+    border-radius: 2px;
+    transition: all var(--duration) var(--ease);
+  }
+
+  .milestone-dismiss:hover {
+    border-color: var(--accent);
+    color: var(--accent);
   }
 
   @media (max-width: 600px) {

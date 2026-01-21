@@ -227,9 +227,9 @@ interface Sensei {
 Write 5+ messages per category per sensei, matching their personality.
 
 **Acceptance**:
-- [ ] Each sensei has distinct voice
-- [ ] At least 5 completion messages each
-- [ ] Messages match CONCEPT.md personality
+- [x] Each sensei has distinct voice
+- [x] At least 5 completion messages each
+- [x] Messages match CONCEPT.md personality
 
 ---
 
@@ -242,9 +242,9 @@ Replace generic "well done" with sensei-specific:
 - Maybe add sensei kanji with message
 
 **Acceptance**:
-- [ ] Completion shows sensei-specific message
-- [ ] Different message each time (random)
-- [ ] Feels like the sensei is talking
+- [x] Completion shows sensei-specific message
+- [x] Different message each time (random)
+- [x] Feels like the sensei is talking
 
 ---
 
@@ -258,9 +258,9 @@ When returning user has streak milestone:
 - Pull from sensei they used most
 
 **Acceptance**:
-- [ ] Milestone messages appear at 3/7/30 days
-- [ ] Styled appropriately for milestone level
-- [ ] Uses favorite sensei's voice
+- [x] Milestone messages appear at 3/7/30 days
+- [x] Styled appropriately for milestone level
+- [x] Uses favorite sensei's voice
 
 ---
 

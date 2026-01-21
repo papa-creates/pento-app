@@ -1,9 +1,16 @@
+export interface SenseiVoice {
+  greeting: string[];      // When selecting sensei
+  completion: string[];    // When finishing a session
+  streak: string[];        // Streak milestones
+}
+
 export interface Sensei {
   id: 'kaze' | 'sora' | 'ryu';
   name: string;
   kanji: string;
   meaning: string;
   philosophy: string;
+  voice: SenseiVoice;
   prompts: Prompt[];
 }
 
@@ -19,6 +26,31 @@ export const senseis: Sensei[] = [
     kanji: '風',
     meaning: 'Wind',
     philosophy: 'Less is more. Every word must earn its place.',
+    voice: {
+      greeting: [
+        'Good. You showed up.',
+        'The page waits.',
+        'Write true.',
+        'No wasted words today.',
+        'Begin.'
+      ],
+      completion: [
+        'Done. That is what matters.',
+        'The work is the work.',
+        'You wrote. Now rest.',
+        'Good. Come back tomorrow.',
+        'Enough for today.',
+        'Clean work.',
+        'The page is no longer empty.'
+      ],
+      streak: [
+        'Consistency. Keep it.',
+        'Days add up. So do words.',
+        'The habit is everything.',
+        'Good. Do not stop now.',
+        'Discipline shows.'
+      ]
+    },
     prompts: [
       { id: 'k1', text: 'Write about a meal. Make me taste it. One hundred words.' },
       { id: 'k2', text: 'Someone waits. Show me their waiting without naming the emotion.' },
@@ -48,6 +80,31 @@ export const senseis: Sensei[] = [
     kanji: '空',
     meaning: 'Sky',
     philosophy: 'Writing is discovery. Let words find their own path.',
+    voice: {
+      greeting: [
+        'Welcome back. The sky is endless today.',
+        'Let the words come. They know where to go.',
+        'No judgment here. Just flow.',
+        'Ready when you are.',
+        'Breathe. Then begin.'
+      ],
+      completion: [
+        'Beautiful. You trusted the process.',
+        'The words found their way.',
+        'You showed up for yourself. That matters.',
+        'Rest now. The well will refill.',
+        'Every session is a small discovery.',
+        'You did something brave today.',
+        'The sky thanks you for flying.'
+      ],
+      streak: [
+        'Look how far you have come.',
+        'Each day, the flow gets easier.',
+        'You are building something beautiful.',
+        'The practice is becoming you.',
+        'Momentum is a gift. Keep it.'
+      ]
+    },
     prompts: [
       { id: 's1', text: 'Write without stopping. No backspace. Five minutes of pure flow.' },
       { id: 's2', text: 'Where are you right now? Every sensation. Leave nothing out.' },
@@ -77,6 +134,31 @@ export const senseis: Sensei[] = [
     kanji: '龍',
     meaning: 'Dragon',
     philosophy: 'Jump in. You are the story. Fear is fuel.',
+    voice: {
+      greeting: [
+        'You again. Good. Let\'s burn something down.',
+        'Fear is fuel. Use it.',
+        'No thinking. Just fire.',
+        'The dragon does not hesitate.',
+        'Show me something dangerous.'
+      ],
+      completion: [
+        'Wild. Untamed. Perfect.',
+        'You survived the fire. Well done.',
+        'That\'s what I\'m talking about.',
+        'Chaos serves you well.',
+        'The dragon approves.',
+        'You didn\'t hold back. Good.',
+        'More of that. Always more.'
+      ],
+      streak: [
+        'The fire grows stronger.',
+        'Day after day, you choose the hard path.',
+        'Most people quit. You didn\'t.',
+        'The dragon feeds on consistency.',
+        'Keep this energy. Always.'
+      ]
+    },
     prompts: [
       { id: 'r1', text: 'Write like someone is chasing you. Five minutes. Go.' },
       { id: 'r2', text: 'You wake somewhere unfamiliar. What do you see first?' },
@@ -108,4 +190,21 @@ export function getSensei(id: string): Sensei | undefined {
 
 export function getRandomPrompt(sensei: Sensei): Prompt {
   return sensei.prompts[Math.floor(Math.random() * sensei.prompts.length)];
+}
+
+// Voice message helpers
+function randomFrom<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+export function getGreeting(sensei: Sensei): string {
+  return randomFrom(sensei.voice.greeting);
+}
+
+export function getCompletionMessage(sensei: Sensei): string {
+  return randomFrom(sensei.voice.completion);
+}
+
+export function getStreakMessage(sensei: Sensei): string {
+  return randomFrom(sensei.voice.streak);
 }
