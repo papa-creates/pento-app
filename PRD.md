@@ -277,9 +277,9 @@ Add visual stats:
 - Best session (most words)
 
 **Acceptance**:
-- [ ] Key stats visible at glance
-- [ ] Responsive layout
-- [ ] Matches app aesthetic
+- [x] Key stats visible at glance
+- [x] Responsive layout
+- [x] Matches app aesthetic
 
 ---
 
@@ -293,9 +293,9 @@ GitHub-style contribution graph:
 - Subtle, zen aesthetic
 
 **Acceptance**:
-- [ ] Shows 12 weeks of history
-- [ ] Color reflects activity level
-- [ ] Hover/tap shows details
+- [x] Shows 12 weeks of history
+- [x] Color reflects activity level
+- [x] Hover/tap shows details
 
 ---
 
@@ -309,9 +309,9 @@ Improve history page:
 - Delete option (with confirm)
 
 **Acceptance**:
-- [ ] Sessions grouped by date
-- [ ] Can expand to read content
-- [ ] Can delete sessions
+- [x] Sessions grouped by date
+- [x] Can expand to read content
+- [x] Can delete sessions
 
 ---
 

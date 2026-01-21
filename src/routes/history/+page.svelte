@@ -1,12 +1,78 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { sessions, type WritingSession } from '$lib/stores/session';
-  import { getSensei } from '$lib/data/senseis';
+  import { sessions, stats, type WritingSession } from '$lib/stores/session';
+  import { getSensei, senseis } from '$lib/data/senseis';
+  import CalendarHeatmap from '$lib/components/CalendarHeatmap.svelte';
 
   let sessionList = $state<WritingSession[]>([]);
+  let userStats = $state($stats);
   let selectedSession = $state<WritingSession | null>(null);
 
   sessions.subscribe(s => sessionList = s);
+  stats.subscribe(s => userStats = s);
+
+  // Group sessions by date
+  type SessionGroup = { date: string; dateLabel: string; sessions: WritingSession[] };
+
+  let groupedSessions = $derived(() => {
+    const groups: Record<string, WritingSession[]> = {};
+
+    sessionList.forEach(session => {
+      const date = new Date(session.startedAt).toISOString().split('T')[0];
+      if (!groups[date]) groups[date] = [];
+      groups[date].push(session);
+    });
+
+    // Convert to array and sort by date descending
+    return Object.entries(groups)
+      .map(([date, sessions]) => ({
+        date,
+        dateLabel: formatDateLabel(date),
+        sessions: sessions.sort((a, b) =>
+          new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime()
+        )
+      }))
+      .sort((a, b) => b.date.localeCompare(a.date));
+  });
+
+  function formatDateLabel(dateStr: string): string {
+    const date = new Date(dateStr);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    if (date.toDateString() === today.toDateString()) return 'Today';
+    if (date.toDateString() === yesterday.toDateString()) return 'Yesterday';
+
+    return date.toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric'
+    });
+  }
+
+  // Find favorite sensei (most sessions)
+  let favoriteSensei = $derived(() => {
+    const counts: Record<string, number> = {};
+    sessionList.forEach(s => {
+      counts[s.senseiId] = (counts[s.senseiId] || 0) + 1;
+    });
+    const topId = Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0];
+    return topId ? getSensei(topId) : null;
+  });
+
+  // Find best session (most words)
+  let bestSession = $derived(() => {
+    if (sessionList.length === 0) return null;
+    return sessionList.reduce((best, s) => s.wordCount > best.wordCount ? s : best);
+  });
+
+  // Sessions this week
+  let sessionsThisWeek = $derived(() => {
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    return sessionList.filter(s => new Date(s.startedAt) >= weekAgo).length;
+  });
 
   function formatDate(date: Date | string): string {
     const d = new Date(date);
@@ -91,25 +157,71 @@
           <p class="hint">complete a writing session to see it here</p>
         </div>
       {:else}
-        <ul class="session-list">
-          {#each sessionList as session}
-            <li>
-              <button class="session-card" onclick={() => viewSession(session)}>
-                <div class="card-left">
-                  <span class="card-kanji">{getSensei(session.senseiId)?.kanji}</span>
-                </div>
-                <div class="card-middle">
-                  <p class="card-prompt">{session.promptText}</p>
-                  <span class="card-date">{formatDate(session.startedAt)}</span>
-                </div>
-                <div class="card-right">
-                  <span class="card-words">{session.wordCount}</span>
-                  <span class="card-label">words</span>
-                </div>
-              </button>
-            </li>
+        <!-- Stats Dashboard -->
+        <div class="stats-dashboard">
+          <div class="stats-row">
+            <div class="stat-card">
+              <span class="stat-value">{userStats.totalWords.toLocaleString()}</span>
+              <span class="stat-label">total words</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-value">{userStats.currentStreak}</span>
+              <span class="stat-label">day streak</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-value">{sessionsThisWeek()}</span>
+              <span class="stat-label">this week</span>
+            </div>
+          </div>
+
+          <div class="stats-row secondary">
+            {#if favoriteSensei()}
+              <div class="stat-mini">
+                <span class="stat-mini-kanji">{favoriteSensei()?.kanji}</span>
+                <span class="stat-mini-label">favorite</span>
+              </div>
+            {/if}
+            {#if bestSession()}
+              <div class="stat-mini">
+                <span class="stat-mini-value">{bestSession()?.wordCount}</span>
+                <span class="stat-mini-label">best session</span>
+              </div>
+            {/if}
+          </div>
+
+          <!-- Heatmap -->
+          <div class="heatmap-section">
+            <CalendarHeatmap sessions={sessionList} />
+          </div>
+        </div>
+
+        <!-- Grouped Sessions -->
+        <div class="sessions-grouped">
+          {#each groupedSessions() as group}
+            <div class="session-group">
+              <h3 class="group-date">{group.dateLabel}</h3>
+              <ul class="session-list">
+                {#each group.sessions as session}
+                  <li>
+                    <button class="session-card" onclick={() => viewSession(session)}>
+                      <div class="card-left">
+                        <span class="card-kanji">{getSensei(session.senseiId)?.kanji}</span>
+                      </div>
+                      <div class="card-middle">
+                        <p class="card-prompt">{session.promptText}</p>
+                        <span class="card-time">{formatTime(session.duration || 0)}</span>
+                      </div>
+                      <div class="card-right">
+                        <span class="card-words">{session.wordCount}</span>
+                        <span class="card-label">words</span>
+                      </div>
+                    </button>
+                  </li>
+                {/each}
+              </ul>
+            </div>
           {/each}
-        </ul>
+        </div>
       {/if}
     </main>
   {/if}
@@ -214,13 +326,6 @@
     text-overflow: ellipsis;
   }
 
-  .card-date {
-    font-size: 0.75rem;
-    color: var(--text-muted);
-    margin-top: 2px;
-    display: block;
-  }
-
   .card-right {
     flex-shrink: 0;
     text-align: right;
@@ -237,6 +342,107 @@
     font-size: 0.65rem;
     color: var(--text-muted);
     letter-spacing: 0.1em;
+  }
+
+  .card-time {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+    display: block;
+    font-family: var(--font-mono);
+  }
+
+  /* Stats Dashboard */
+  .stats-dashboard {
+    margin-bottom: var(--space-xl);
+    padding-bottom: var(--space-lg);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-lg);
+    margin-bottom: var(--space-md);
+  }
+
+  .stats-row.secondary {
+    gap: var(--space-xl);
+    margin-bottom: var(--space-lg);
+  }
+
+  .stat-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 80px;
+  }
+
+  .stat-value {
+    font-family: var(--font-mono);
+    font-size: 1.8rem;
+    color: var(--text);
+    font-weight: 300;
+  }
+
+  .stat-label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    margin-top: 2px;
+  }
+
+  .stat-mini {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .stat-mini-kanji {
+    font-size: 1.5rem;
+    color: var(--text-secondary);
+  }
+
+  .stat-mini-value {
+    font-family: var(--font-mono);
+    font-size: 1rem;
+    color: var(--text);
+  }
+
+  .stat-mini-label {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    margin-top: 2px;
+  }
+
+  .heatmap-section {
+    display: flex;
+    justify-content: center;
+    padding: var(--space-md) 0;
+  }
+
+  /* Grouped Sessions */
+  .sessions-grouped {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+  }
+
+  .session-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  .group-date {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding-bottom: var(--space-xs);
+    border-bottom: 1px solid var(--border);
   }
 
   /* Detail View */
