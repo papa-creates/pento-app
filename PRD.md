@@ -132,8 +132,8 @@ Modes:
 - Gonzo: 5 min, chaos prompt combos
 
 **Acceptance**:
-- [ ] 4 modes defined with distinct mechanics
-- [ ] Exportable and typed
+- [x] 4 modes defined with distinct mechanics
+- [x] Exportable and typed
 
 ---
 
