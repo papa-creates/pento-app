@@ -169,6 +169,8 @@
     {#if userStats.totalSessions > 0}
       <a href="/history" class="footer-link">history</a>
       <span class="dot"></span>
+      <a href="/achievements" class="footer-link">achievements</a>
+      <span class="dot"></span>
     {/if}
     {#if currentSub.status !== 'pro'}
       <a href="/pricing" class="footer-link">pricing</a>

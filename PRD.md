@@ -98,10 +98,10 @@ Create achievements page:
 - Link from footer
 
 **Acceptance**:
-- [ ] Page accessible at /achievements
-- [ ] Shows all achievements in grid
-- [ ] Visual distinction between locked/unlocked
-- [ ] Mobile responsive
+- [x] Page accessible at /achievements
+- [x] Shows all achievements in grid
+- [x] Visual distinction between locked/unlocked
+- [x] Mobile responsive
 
 ---
 
