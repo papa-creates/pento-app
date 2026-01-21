@@ -17,9 +17,9 @@ Create achievement system store with:
 - Export derived `$unlockedCount` and `$totalCount`
 
 **Acceptance**:
-- [ ] Can call `achievements.unlock('first-blood')` and it persists
-- [ ] Reloading page preserves unlocked achievements
-- [ ] `$unlockedCount` reactive updates work
+- [x] Can call `achievements.unlock('first-blood')` and it persists
+- [x] Reloading page preserves unlocked achievements
+- [x] `$unlockedCount` reactive updates work
 
 ---
 
